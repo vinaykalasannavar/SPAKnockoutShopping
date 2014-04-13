@@ -1,0 +1,104 @@
+﻿@model Vinay.Practice.MVC4.SPAKnockoutShopping.Models.LoginModel
+@{
+    ViewBag.Title = "My shoppingcategory List";
+}
+@functions{
+    public string GetAntiForgeryToken()
+    {
+        string cookieToken, formToken;
+        AntiForgery.GetTokens(null, out cookieToken, out formToken);
+        return cookieToken + ":" + formToken;
+    }
+}
+
+<header>
+    <h1>@ViewBag.Title</h1>
+</header>
+
+<div id="main-content">
+    @if (@User.Identity.IsAuthenticated)
+    {
+        <p class="error" data-bind="text: error"></p>
+        <input id="antiForgeryToken" type="hidden" value="@GetAntiForgeryToken()" />
+        <button data-bind="click: showshoppingCategoryList">Continue Shopping</button>
+        <button data-bind="click: addCheckoutList">Go to Checkout</button>
+
+        <div id="shoppingForm">
+            <section id="lists" data-bind="foreach: shoppingCategoryLists, visible: shoppingCategoryLists().length > 0">
+                <article class="shoppingCategoryList">
+                    <header>
+                        <input class="required" data-bind="value: title, disable: true" />
+                    </header>
+
+                    @*<a href="#" class="expandlist" data-bind="click: $parent.expandCategory">+</a>*@
+                    <ul class="product-headers">
+                        <li class="name-col">Name</li>
+                        <li>Price</li>
+                    </ul>
+
+                    <ul data-bind="foreach: shoppingitems">
+                        <li>
+                            <input class="todoItemInput" type="text" data-bind="value: title, disable: true" />
+                            £ <input class="priceInput" type="text" data-bind="value: price, disable: true" />
+                            <a href="#" class="buyBtn" data-bind="click: $parent.buyProduct">Buy</a>
+                            <p class="error" data-bind="visible: errorMessage, text: errorMessage"></p>
+                        </li>
+                    </ul>
+                    <p class="error" data-bind="visible: errorMessage, text: errorMessage"></p>
+                </article>
+            </section>
+        </div>
+        <div id="checkoutForm" style="display:none;">
+            <header>
+                <label>My basket</label>
+            </header>
+            <section id="lists" data-bind="foreach: checkoutLists">
+                <article class="shoppingCategoryList">
+                    <ul data-bind="foreach: checkoutItems">
+                        <li>
+                            <input class="todoItemInput" type="text" data-bind="value: productname, disable: true" />
+                            <span data-bind="text:price"></span> *
+                            <span data-bind="text:quantity"></span> = £
+                            <span data-bind="text:subtotal"></span>
+                        </li>
+                    </ul>
+                    
+                    Total: £<span class="todoItemInput" data-bind="text: totalPrice" />
+
+                </article>
+            </section>
+
+            <button data-bind="click: finishCheckoutList">Checkout</button>
+
+        </div>
+    }
+    else
+    {
+        <div class="shoppingCategoryList" id="loginPanel">
+            <section id="localLoginPanel">
+                <h2>Log in</h2>
+                @Html.Partial("_Login")
+            </section>
+            <section id="socialLoginPanel">
+                <h2>Log in using another service</h2>
+                @Html.Action("ExternalLoginsList", "Account", new { ReturnUrl = ViewBag.ReturnUrl })
+            </section>
+            <p>First time here? <a id="showRegister">Sign up</a></p>
+        </div>
+        <div class="shoppingCategoryList" id="registerPanel">
+            <h2>Sign up</h2>
+            @Html.Partial("_Register")
+            <p>Already signed up? <a id="showLogin">Log in</a></p>
+        </div>
+    }
+</div>
+
+@if (@User.Identity.IsAuthenticated)
+{
+    @section scripts {
+        @Scripts.Render("~/bundles/knockout")
+        @Scripts.Render("~/bundles/jqueryval")
+        @Scripts.Render("~/bundles/shoppingItem")
+        @Scripts.Render("~/bundles/jqcookie")
+    }
+}
